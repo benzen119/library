@@ -1,0 +1,22 @@
+{
+  "name": "library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benzen119/library.git"
+  },
+  "author": "Kamil Siedlecki",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/benzen119/library/issues"
+  },
+  "homepage": "https://github.com/benzen119/library#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
