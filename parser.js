@@ -3,8 +3,8 @@ function readFile(fileName) {
   data = fs.readFileSync(fileName, 'utf-8')
   data = data.toString().split('\n')
 
-  var model = [];
-  var modelCollection = [];
+  var model = []
+  var modelCollection = []
 
   for (var i = 0; i < data.length; i++) {
     data[i] = data[i].trim().split(/\s+/)
