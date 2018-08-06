@@ -1,28 +1,27 @@
+var Sequelize = require('sequelize')
 const express = require('express')
 const pg = require('pg')
 const app = express()
 
-const pool = new pg.Pool({
-  database: 'library',
-  user: 'postgres',
-  password: '123',
+const sequelize = new Sequelize('library', 'postgres', '123', {
+  host: 'localhost',
   port: 8000,
-})
+  dialect: 'postgres',
+  pool: {
+    max: 9,
+    min: 0,
+    idle: 10000
+  },
+  operatorsAliases: false
+});
 
-pool.connect(onConnect)
-
-function onConnect(err, client, done) {
-  //Err - This means something went wrong connecting to the database.
-  if (err) {
-    console.error('Error occured', err)
-    process.exit(1)
-  }
-  //For now let's end client
-  console.log('success')
-  client.query('SELECT * FROM users').then(data => {
-    console.log(data)
+sequelize.authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.')
   })
-}
+  .catch(err => {
+    console.error('Unable to connect to the database:', err)
+  })
 
 app.listen(4000, function () {
   console.log('Server is running.. on Port 4000')

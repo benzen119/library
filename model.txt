@@ -1,0 +1,50 @@
+@Types
+  pk        serial primary key not null
+  str       varchar(10)
+
+#IdAdded
+  id        pk
+  added     date default now()
+  
+Customer
+  customer_no       int pk
+  name              str
+  address           str
+  phone_no          str
+
+Products
+  product_code      int pk
+  manufacturer_no   int fk[Manufacturer]
+  price             float(2)
+  type              str
+
+Stock
+  product_code      int fk[Products]
+  shop_no           int fk[Shops]
+
+Manufacturers
+  manufacturer_no  int pk
+  name             str
+
+Sales_details
+  product_code     int fk[Products]
+  sales_no         int fk[Sales]
+  quantity         smallint
+
+Shops
+  shop_no          int pk
+  address          str
+  name             str
+
+Vendors
+  staff_no         int pk
+  name             text
+
+Sales
+  sales_no         int pk
+  customer_no      int fk[Customer]
+  staff_no         int fk[Vendors]
+  shop_no          int fk[Shops]
+  date             timestamp
+  sum_total        float(2)
+  
