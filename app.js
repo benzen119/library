@@ -13,7 +13,7 @@ const sequelize = new Sequelize('library', 'postgres', '123', {
     idle: 10000
   },
   operatorsAliases: false
-});
+})
 
 sequelize.authenticate()
   .then(() => {
