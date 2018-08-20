@@ -38,7 +38,9 @@ Vendors
 
 Sales
   sales_no         int pk
+  customer_no      int fk[Customer]
   staff_no         int fk[Vendors]
   shop_no          int fk[Shops]
   date             timestamp
   sum_total        float
+  

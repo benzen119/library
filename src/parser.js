@@ -220,20 +220,37 @@ function entityNameCheck (file) {
   setTimeout(() => {
     console.log('DB tables:')
     console.log(dbTables)
+    console.log('------------------')
     compareArrays(dbTables, modelTables, queriesCollection)
   }, 1000)
 }
 
 function compareArrays (dbArray, modelArray, collection) {
-  modelArray = modelArray.filter(val => !dbArray.includes(val))
-  if (modelArray.length != null && modelArray.length > 0) {
-    modelArray.map(item => {
-      console.log('Table ' + item + ' is missing in Database structure!')
-      collection.map(query => {
-        var upperFirstLetterItem = capitalizeFirstLetter(item)
-        if (query.includes('CREATE TABLE IF NOT EXISTS ' + upperFirstLetterItem)) {
-          console.log('Try to enter: ' + query)
-        }
+  if (dbArray.length !== modelArray.length) {
+    modelArray = modelArray.filter(val => !dbArray.includes(val))
+    if (modelArray.length != null && modelArray.length > 0) {
+      modelArray.map(item => {
+        console.log('Table ' + item + ' is missing in Database structure!')
+        collection.map(query => {
+          var upperFirstLetterItem = capitalizeFirstLetter(item)
+          if (query.includes('CREATE TABLE IF NOT EXISTS ' + upperFirstLetterItem)) {
+            console.log('Try to enter: ' + query)
+          }
+        })
+      })
+    }
+  }
+  else {
+    var copyOfModelArray = modelArray
+    modelArray = modelArray.filter(val => !dbArray.includes(val))
+    dbArray = dbArray.filter(val => !copyOfModelArray.includes(val))
+    console.log('--------------')
+    console.log(modelArray)
+    console.log(dbArray)
+    dbArray.map(dbItem => {
+      modelArray.map(modelItem => {
+        console.log(modelItem + ' is inconsistent.')
+        console.log('Try to enter: ALTER TABLE ' + dbItem + ' RENAME TO ' + modelItem)
       })
     })
   }
