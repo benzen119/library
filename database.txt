@@ -1,0 +1,44 @@
+@Types
+  pk            serial primary key not null
+  str           varchar(10) unique
+
+#IdAdded
+  id            pk
+  added         date default now()
+
+Author +IdAdded
+  name          varchar(10)
+  surname       varchar(10)
+
+Book
+  edition       int
+  title         varchar(15)
+  author        varchar(10) fk[Author]
+Publication
+  title         varchar(10) unique
+
+PublishingHouse +IdAdded
+  name          varchar(10)
+
+Edition +IdAdded
+  publication   varchar(10) fk[Publication]
+  year          date default now()
+  isbn          varchar(10)
+  pub_house     int fk[PublishingHouse]
+
+Book +IdAdded
+  inventory     int
+  edition       int fk[Edition]
+
+Customer +IdAdded
+  name          varchar(10)
+  address       varchar(10)
+  phone         int
+  email         varchar(10)
+
+Order +IdAdded
+  customer      int fk[Customer]
+  book          int fk[Book]
+  duedate       date default now()
+  completed     date default now()
+  fine          money default 0.00

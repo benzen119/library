@@ -1,10 +1,6 @@
 @Types
-  pk        serial primary key not null
+  pk        primary key not null
   str       varchar(10)
-
-#IdAdded
-  id        pk
-  added     date default now()
   
 Customer
   customer_no       int pk
@@ -14,8 +10,8 @@ Customer
 
 Products
   product_code      int pk
-  manufacturer_no   int fk[Manufacturer]
-  price             float(2)
+  manufacturer_no   int fk[Manufacturers]
+  price             float
   type              str
 
 Stock
@@ -29,7 +25,7 @@ Manufacturers
 Sales_details
   product_code     int fk[Products]
   sales_no         int fk[Sales]
-  quantity         smallint
+  quantity         int
 
 Shops
   shop_no          int pk
@@ -42,9 +38,7 @@ Vendors
 
 Sales
   sales_no         int pk
-  customer_no      int fk[Customer]
   staff_no         int fk[Vendors]
   shop_no          int fk[Shops]
   date             timestamp
-  sum_total        float(2)
-  
+  sum_total        float

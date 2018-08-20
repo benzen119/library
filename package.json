@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "nodemon ./app",
+    "build": "rimraf ./ && babel ./ --out-dir --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
+    "start": "nodemon ./src/app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,6 +27,9 @@
     "sequelize": "^4.37.6"
   },
   "devDependencies": {
-    "nodemon": "^1.17.3"
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "nodemon": "^1.17.3",
+    "rimraf": "^2.6.2"
   }
 }
