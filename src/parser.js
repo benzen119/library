@@ -199,7 +199,6 @@ function findDBTables () {
           dbTables.push(item.table_name)
         })
         //console.log(dbTables)
-        pool.end()
         client.end()
       })
       .catch(e => console.error(e.stack))
@@ -207,21 +206,53 @@ function findDBTables () {
   return dbTables
 }
 
-function entityNameCheck (file) {
+function findColumnForTable (table) {
+  var tableColumns = []
+  pool.connect((err, client) => {
+    if (err) throw err
+    var query = "select column_name, data_type from information_schema.columns where table_schema='public' AND table_name='" + (table).toLowerCase() + "' order by column_name"
+    client.query(query)
+      .then(res => {
+        res.rows.forEach(item => {
+          tableColumns.push(item.column_name)
+        })
+        client.end()
+      })
+      .catch(e => console.error(e.stack))
+  })
+  return tableColumns
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function checkConsistency (file, checkType, table) {
   var modelTables = []
   var dbTables = findDBTables()
+  var tableColumns = findColumnForTable(table)
   var collection = objectifyModel(file)
   collection.tables.map(item => {
     modelTables.push(item.name.toLowerCase())
   })
-  console.log('Model tables:')
-  console.log(modelTables)
-  console.log('------------------')
   setTimeout(() => {
-    console.log('DB tables:')
-    console.log(dbTables)
-    console.log('------------------')
-    compareArrays(dbTables, modelTables, queriesCollection)
+    switch(checkType) {
+      case 'entities':
+        compareArrays(dbTables, modelTables, queriesCollection)
+        break
+  
+      case 'attributes':
+        var modelColumns = []
+        collection.tables.map(item => {
+          if (item.name === table) {
+            item.param.map(column => {
+              modelColumns.push(column.fieldName)
+            })
+          }
+        })
+        compareAtributes(modelColumns, tableColumns, table)
+        break
+    }
   }, 1000)
 }
 
@@ -244,9 +275,6 @@ function compareArrays (dbArray, modelArray, collection) {
     var copyOfModelArray = modelArray
     modelArray = modelArray.filter(val => !dbArray.includes(val))
     dbArray = dbArray.filter(val => !copyOfModelArray.includes(val))
-    console.log('--------------')
-    console.log(modelArray)
-    console.log(dbArray)
     dbArray.map(dbItem => {
       modelArray.map(modelItem => {
         console.log(modelItem + ' is inconsistent.')
@@ -256,10 +284,19 @@ function compareArrays (dbArray, modelArray, collection) {
   }
 }
 
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+function compareAtributes(modelColumn, dbColumn, table) {
+  var copyOfModelColumn = modelColumn
+  modelColumn = modelColumn.filter(val => !dbColumn.includes(val))
+  dbColumn = dbColumn.filter(val => !copyOfModelColumn.includes(val))
+  dbColumn.map(dbItem => {
+    modelColumn.map(modelItem => {
+      console.log(modelItem + ' is inconsistent.')
+      console.log('Try to enter: ALTER TABLE ' + (table).toLowerCase() + ' RENAME COLUMN ' + dbItem + ' TO ' + modelItem)
+    })
+  })
 }
 
 //objectifyModel('../model.txt')
 //createModel()
-entityNameCheck('../model.txt')
+//checkConsistency('../model.txt', 'entities')
+checkConsistency('../model.txt', 'attributes', 'Customer')

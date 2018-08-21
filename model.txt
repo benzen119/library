@@ -3,7 +3,7 @@
   str       varchar(10)
   
 Customer
-  customer_no       int pk
+  customer_number       int pk
   name              str
   address           str
   phone_no          str
