@@ -250,7 +250,7 @@ function checkConsistency (file, checkType, table) {
             })
           }
         })
-        compareAtributes(modelColumns, tableColumns, table)
+        compareAttributes(modelColumns, tableColumns, table)
         break
     }
   }, 1000)
@@ -282,7 +282,7 @@ function compareArrays (dbArray, modelArray, collection) {
   }
 }
 
-function compareAtributes(modelColumn, dbColumn, table) {
+function compareAttributes(modelColumn, dbColumn, table) {
   var copyOfModelColumn = modelColumn
   modelColumn = modelColumn.filter(val => !dbColumn.includes(val))
   dbColumn = dbColumn.filter(val => !copyOfModelColumn.includes(val))
