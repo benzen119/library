@@ -275,11 +275,9 @@ function compareArrays (dbArray, modelArray, collection) {
     var copyOfModelArray = modelArray
     modelArray = modelArray.filter(val => !dbArray.includes(val))
     dbArray = dbArray.filter(val => !copyOfModelArray.includes(val))
-    dbArray.map(dbItem => {
-      modelArray.map(modelItem => {
-        console.log(modelItem + ' is inconsistent.')
-        console.log('Try to enter: ALTER TABLE ' + dbItem + ' RENAME TO ' + modelItem)
-      })
+    modelArray.map((modelItem, index) => {
+      console.log(modelArray[index] + ' is inconsistent.')
+      console.log('Try to enter: ALTER TABLE ' + dbArray[index] + ' RENAME TO ' + modelArray[index])
     })
   }
 }
@@ -288,15 +286,15 @@ function compareAtributes(modelColumn, dbColumn, table) {
   var copyOfModelColumn = modelColumn
   modelColumn = modelColumn.filter(val => !dbColumn.includes(val))
   dbColumn = dbColumn.filter(val => !copyOfModelColumn.includes(val))
-  dbColumn.map(dbItem => {
-    modelColumn.map(modelItem => {
-      console.log(modelItem + ' is inconsistent.')
-      console.log('Try to enter: ALTER TABLE ' + (table).toLowerCase() + ' RENAME COLUMN ' + dbItem + ' TO ' + modelItem)
-    })
+  console.log(dbColumn)
+  console.log(modelColumn)
+  modelColumn.map((modelItem, index) => {
+    console.log(modelColumn[index] + ' is inconsistent.')
+    console.log('Try to enter: ALTER TABLE ' + (table).toLowerCase() + ' RENAME COLUMN ' + dbColumn[index] + ' TO ' + modelColumn[index])
   })
 }
 
 //objectifyModel('../model.txt')
 //createModel()
-//checkConsistency('../model.txt', 'entities')
-checkConsistency('../model.txt', 'attributes', 'Customer')
+checkConsistency('../model.txt', 'entities', 'Customer')
+//checkConsistency('../model.txt', 'attributes', 'Customer')
