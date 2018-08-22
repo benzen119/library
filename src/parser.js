@@ -243,14 +243,23 @@ function checkConsistency (file, checkType, table) {
   
       case 'attributes':
         var modelColumns = []
+        var modelColumnWithTypes = []
         collection.tables.map(item => {
           if (item.name === table) {
             item.param.map(column => {
               modelColumns.push(column.fieldName)
+              modelColumnWithTypes.push({
+                name: column.fieldName,
+                type: column.fieldType
+              })
             })
           }
         })
-        compareAttributes(modelColumns, tableColumns, table)
+        compareAttributes(modelColumns, modelColumnWithTypes, tableColumns, table)
+        break
+      
+      case 'types':
+        
         break
     }
   }, 1000)
@@ -265,7 +274,7 @@ function compareArrays (dbArray, modelArray, collection) {
         collection.map(query => {
           var upperFirstLetterItem = capitalizeFirstLetter(item)
           if (query.includes('CREATE TABLE IF NOT EXISTS ' + upperFirstLetterItem)) {
-            console.log('Try to enter: ' + query)
+            console.log('Try to run query: ' + query)
           }
         })
       })
@@ -276,25 +285,52 @@ function compareArrays (dbArray, modelArray, collection) {
     modelArray = modelArray.filter(val => !dbArray.includes(val))
     dbArray = dbArray.filter(val => !copyOfModelArray.includes(val))
     modelArray.map((modelItem, index) => {
-      console.log(modelArray[index] + ' is inconsistent.')
-      console.log('Try to enter: ALTER TABLE ' + dbArray[index] + ' RENAME TO ' + modelArray[index])
+      console.log('Table ' + modelArray[index] + ' is inconsistent.')
+      console.log('Try to run query: ALTER TABLE ' + dbArray[index] + ' RENAME TO ' + modelArray[index])
     })
   }
 }
 
-function compareAttributes(modelColumn, dbColumn, table) {
+function findColumnItem (item, itemToFind) {
+  return item === itemToFind
+}
+
+function compareAttributes(modelColumn, modelColumnWithTypes, dbColumn, table) {
   var copyOfModelColumn = modelColumn
   modelColumn = modelColumn.filter(val => !dbColumn.includes(val))
   dbColumn = dbColumn.filter(val => !copyOfModelColumn.includes(val))
   console.log(dbColumn)
   console.log(modelColumn)
-  modelColumn.map((modelItem, index) => {
-    console.log(modelColumn[index] + ' is inconsistent.')
-    console.log('Try to enter: ALTER TABLE ' + (table).toLowerCase() + ' RENAME COLUMN ' + dbColumn[index] + ' TO ' + modelColumn[index])
-  })
+  if (dbColumn.length === modelColumn.length) {
+    modelColumn.map((modelItem, index) => {
+      console.log('COLUMN ' + modelColumn[index] + ' is inconsistent.')
+      console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' RENAME COLUMN ' + dbColumn[index] + ' TO ' + modelColumn[index])
+    })
+  }
+  else {
+    if (dbColumn.length > modelColumn.length) {
+      dbColumn.map((dbItem, index) => {
+        console.log('COLUMN ' + dbColumn[index] + ' is redundat in database structure!')
+        console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' DROP COLUMN ' + dbColumn[index])
+      })
+    }
+    if (dbColumn.length < modelColumn.length) {
+      modelColumn.map((dbItem, index) => {
+        console.log('COLUMN ' + modelColumn[index] + ' is missing in database structure!')
+        var columnTypeToAdd = ''
+        modelColumnWithTypes.map(item => {
+          if (item.name === modelColumn[index]) {
+            columnTypeToAdd = item.type
+          }
+        })
+        console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' ADD COLUMN ' + columnTypeToAdd.join(" "))
+      })
+    }
+  }
 }
 
 //objectifyModel('../model.txt')
 //createModel()
-checkConsistency('../model.txt', 'entities', 'Customer')
-//checkConsistency('../model.txt', 'attributes', 'Customer')
+//checkConsistency('../model.txt', 'entities', 'Customer')
+checkConsistency('../model.txt', 'attributes', 'Customer')
+//checkConsistency('../model.txt', 'types', 'Customer')
