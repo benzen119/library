@@ -1,3 +1,5 @@
+var _ = require('lodash')
+
 function readFile(fileName) {
   var fs = require('fs'),
   data = fs.readFileSync(fileName, 'utf-8');
@@ -11,7 +13,8 @@ function objectifyModel(fileName) {
 
   var entity = parse(data);
   var collection = determineType(entity);
-  //console.log(collection)
+  // console.log(collection)
+  // console.log(collection.tables[0].param)
   return collection;
 }
 
@@ -42,13 +45,7 @@ function determineType(entity) {
   }
 
   var collection = { tables: tables, types: types, set: set }
-  // console.log(tables);
-  // console.log('------------------------------------------');
-  // console.log(tables[0]);
-  // console.log('------------------------------------------');
-  // console.log(tables[1].param[1].fieldType);
-  // console.log('------------------------------------------');
-  // console.log(types);
+
   return collection;
 }
 
@@ -188,39 +185,77 @@ function createModel () {
   }).catch(err => console.log(err))
 }
 
-function findDBTables () {
+function findDBTables(modelTables, queriesCollection) {
   var dbTables = []
-  pool.connect((err, client) => {
+  pool.connect((err, client, done) => {
     if (err) throw err
     var query = "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
-    client.query(query)
-      .then(res => {
+
+    client.query(query, (err, res) => {
+      done()
+      if (err) {
+        console.log(err.stack)
+      } else {
         res.rows.forEach(item => {
           dbTables.push(item.table_name)
         })
-        //console.log(dbTables)
-        client.end()
-      })
-      .catch(e => console.error(e.stack))
+        compareArrays(dbTables, modelTables, queriesCollection)
+      }
+    })
   })
-  return dbTables
 }
 
-function findColumnForTable (table) {
-  var tableColumns = []
+function findAllColumnsForTable(table) {
+  var columns = []
   pool.connect((err, client) => {
     if (err) throw err
     var query = "select column_name, data_type from information_schema.columns where table_schema='public' AND table_name='" + (table).toLowerCase() + "' order by column_name"
     client.query(query)
       .then(res => {
-        res.rows.forEach(item => {
-          tableColumns.push(item.column_name)
-        })
+        columns = res.rows
         client.end()
       })
       .catch(e => console.error(e.stack))
   })
-  return tableColumns
+    return columns
+}
+
+
+function findAllColumnsForTable(table, sortedCollection) {
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    var query = "select column_name, data_type from information_schema.columns where table_schema='public' AND table_name='" + (table).toLowerCase() + "' order by column_name"
+
+    client.query(query, (err, res) => {
+      done()
+      if (err) {
+        console.log(err.stack)
+      } else {
+        compareDataTypes(sortedCollection, res.rows, table)
+      }
+    })
+  })
+}
+
+
+function findColumnForTable(table, modelColumns, modelColumnWithTypes) {
+  var tableColumns = []
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    var query = "select column_name, data_type from information_schema.columns where table_schema='public' AND table_name='" + (table).toLowerCase() + "' order by column_name"
+
+    client.query(query, (err, res) => {
+      done()
+      if (err) {
+        console.log(err.stack)
+      } else {
+        res.rows.forEach(item => {
+          tableColumns.push(item.column_name)
+        })
+        compareAttributes(modelColumns, modelColumnWithTypes, tableColumns, table)
+      }
+    })
+  })
 }
 
 function capitalizeFirstLetter(string) {
@@ -229,40 +264,47 @@ function capitalizeFirstLetter(string) {
 
 function checkConsistency (file, checkType, table) {
   var modelTables = []
-  var dbTables = findDBTables()
-  var tableColumns = findColumnForTable(table)
   var collection = objectifyModel(file)
+  var sortedCollection = collection.tables
+
+  sortedCollection.map(tableItem => {
+    tableItem.param.sort((a, b) => {
+      var firstItem = a.fieldName.toUpperCase()
+      var secondItem = b.fieldName.toUpperCase()
+      return (firstItem < secondItem) ? -1 : (firstItem > secondItem) ? 1 : 0
+    })
+  })
+
   collection.tables.map(item => {
     modelTables.push(item.name.toLowerCase())
   })
-  setTimeout(() => {
-    switch(checkType) {
-      case 'entities':
-        compareArrays(dbTables, modelTables, queriesCollection)
-        break
-  
-      case 'attributes':
-        var modelColumns = []
-        var modelColumnWithTypes = []
-        collection.tables.map(item => {
-          if (item.name === table) {
-            item.param.map(column => {
-              modelColumns.push(column.fieldName)
-              modelColumnWithTypes.push({
-                name: column.fieldName,
-                type: column.fieldType
-              })
+
+  switch(checkType) {
+    case 'entities':
+      findDBTables(modelTables, queriesCollection)
+      break
+
+    case 'attributes':
+      var modelColumns = []
+      var modelColumnWithTypes = []
+      collection.tables.map(item => {
+        if (item.name === table) {
+          item.param.map(column => {
+            modelColumns.push(column.fieldName)
+            modelColumnWithTypes.push({
+              name: column.fieldName,
+              type: column.fieldType
             })
-          }
-        })
-        compareAttributes(modelColumns, modelColumnWithTypes, tableColumns, table)
-        break
-      
-      case 'types':
-        
-        break
-    }
-  }, 1000)
+          })
+        }
+      })
+      findColumnForTable(table, modelColumns, modelColumnWithTypes)
+      break
+    
+    case 'types':
+      findAllColumnsForTable(table, sortedCollection)
+      break
+  }
 }
 
 function compareArrays (dbArray, modelArray, collection) {
@@ -291,16 +333,11 @@ function compareArrays (dbArray, modelArray, collection) {
   }
 }
 
-function findColumnItem (item, itemToFind) {
-  return item === itemToFind
-}
-
 function compareAttributes(modelColumn, modelColumnWithTypes, dbColumn, table) {
+  console.log(dbColumn)
   var copyOfModelColumn = modelColumn
   modelColumn = modelColumn.filter(val => !dbColumn.includes(val))
   dbColumn = dbColumn.filter(val => !copyOfModelColumn.includes(val))
-  console.log(dbColumn)
-  console.log(modelColumn)
   if (dbColumn.length === modelColumn.length) {
     modelColumn.map((modelItem, index) => {
       console.log('COLUMN ' + modelColumn[index] + ' is inconsistent.')
@@ -321,6 +358,7 @@ function compareAttributes(modelColumn, modelColumnWithTypes, dbColumn, table) {
         modelColumnWithTypes.map(item => {
           if (item.name === modelColumn[index]) {
             columnTypeToAdd = item.type
+            //TO DO: CHANGE DATA TO DB TYPES
           }
         })
         console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' ADD COLUMN ' + columnTypeToAdd.join(" "))
@@ -329,8 +367,12 @@ function compareAttributes(modelColumn, modelColumnWithTypes, dbColumn, table) {
   }
 }
 
+function compareDataTypes(modelCollection, dbColumns, table) {
+  
+}
+
 //objectifyModel('../model.txt')
 //createModel()
 //checkConsistency('../model.txt', 'entities', 'Customer')
-checkConsistency('../model.txt', 'attributes', 'Customer')
-//checkConsistency('../model.txt', 'types', 'Customer')
+//checkConsistency('../model.txt', 'attributes', 'Customer')
+checkConsistency('../model.txt', 'types', 'Customer')
