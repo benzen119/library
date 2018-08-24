@@ -3,7 +3,7 @@
   str       varchar(10)
   
 Customer
-  customer_number       int pk
+  customer_no       int pk
   name              str
   address           str
   phone_no          str
@@ -11,7 +11,7 @@ Customer
 Products
   product_code      int pk
   manufacturer_no   int fk[Manufacturers]
-  price             float
+  price             int
   type              str
 
 Stock
@@ -43,4 +43,3 @@ Sales
   shop_no          int fk[Shops]
   date             timestamp
   sum_total        float
-  

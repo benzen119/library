@@ -1,4 +1,3 @@
-var _ = require('lodash')
 
 function readFile(fileName) {
   var fs = require('fs'),
@@ -205,22 +204,6 @@ function findDBTables(modelTables, queriesCollection) {
   })
 }
 
-function findAllColumnsForTable(table) {
-  var columns = []
-  pool.connect((err, client) => {
-    if (err) throw err
-    var query = "select column_name, data_type from information_schema.columns where table_schema='public' AND table_name='" + (table).toLowerCase() + "' order by column_name"
-    client.query(query)
-      .then(res => {
-        columns = res.rows
-        client.end()
-      })
-      .catch(e => console.error(e.stack))
-  })
-    return columns
-}
-
-
 function findAllColumnsForTable(table, sortedCollection) {
   pool.connect((err, client, done) => {
     if (err) throw err
@@ -236,7 +219,6 @@ function findAllColumnsForTable(table, sortedCollection) {
     })
   })
 }
-
 
 function findColumnForTable(table, modelColumns, modelColumnWithTypes) {
   var tableColumns = []
@@ -352,27 +334,54 @@ function compareAttributes(modelColumn, modelColumnWithTypes, dbColumn, table) {
       })
     }
     if (dbColumn.length < modelColumn.length) {
-      modelColumn.map((dbItem, index) => {
+      modelColumn.map((modelItem, index) => {
         console.log('COLUMN ' + modelColumn[index] + ' is missing in database structure!')
         var columnTypeToAdd = ''
         modelColumnWithTypes.map(item => {
           if (item.name === modelColumn[index]) {
-            columnTypeToAdd = item.type
-            //TO DO: CHANGE DATA TO DB TYPES
+            if (item.type[0] === 'serial') item.type[0] = 'integer'
+            if (item.type[0] === 'int') item.type[0] = 'integer'
+            if (item.type[0].match(charRegex)) item.type[0] = 'character varying'
+            if (item.type[0] === 'float') item.type[0] = 'double precision'
+            if (item.type[0] === 'timestamp') item.type[0] = 'timestamp without time zone'
+            columnTypeToAdd = item.type[0]
           }
         })
-        console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' ADD COLUMN ' + columnTypeToAdd.join(" "))
+        console.log('Try to run query: ALTER TABLE ' + (table).toLowerCase() + ' ADD COLUMN ' + modelColumn[index] + columnTypeToAdd.join(" "))
       })
     }
   }
 }
 
 function compareDataTypes(modelCollection, dbColumns, table) {
-  
+  var charRegex = /(varchar|decimal|bit|varbit|char)./
+  modelCollection.map((modelItem) => {
+    if (modelItem.name === table) {
+      modelItem.param.map((paramItem, index)=> {
+        if (paramItem.fieldType[0] === 'serial') paramItem.fieldType[0] = 'integer'
+        if (paramItem.fieldType[0] === 'int') paramItem.fieldType[0] = 'integer'
+        if (paramItem.fieldType[0].match(charRegex)) paramItem.fieldType[0] = 'character varying'
+        if (paramItem.fieldType[0] === 'float') paramItem.fieldType[0] = 'double precision'
+        if (paramItem.fieldType[0] === 'timestamp') paramItem.fieldType[0] = 'timestamp without time zone'
+
+        if (paramItem.fieldType[0] !== dbColumns[index].data_type && (dbColumns[index].data_type === 'character varying')) {
+          console.log('The ' + dbColumns[index].data_type + ' data type in table ' + table + ' in column ' + paramItem.fieldName + ' is inconsistent!')
+          console.log('Try to run query: ALTER TABLE ' + table + ' ALTER COLUMN ' + paramItem.fieldName + ' TYPE ' + paramItem.fieldType[0] + ' USING <' + paramItem.fieldName + '::' + paramItem.fieldType[0] + '>')
+          console.log('----------------------------------------------------')
+        }
+
+        if (paramItem.fieldType[0] !== dbColumns[index].data_type && (dbColumns[index].data_type !== 'character varying')) {
+          console.log('The ' + dbColumns[index].data_type + ' data type in table ' + table + ' in column ' + paramItem.fieldName + ' is inconsistent!')
+          console.log('Try to run query: ALTER TABLE ' + table + ' ALTER COLUMN ' + paramItem.fieldName + ' TYPE ' + paramItem.fieldType[0])
+          console.log('----------------------------------------------------')
+        }
+      })
+    }
+  })
 }
 
 //objectifyModel('../model.txt')
 //createModel()
 //checkConsistency('../model.txt', 'entities', 'Customer')
-//checkConsistency('../model.txt', 'attributes', 'Customer')
-checkConsistency('../model.txt', 'types', 'Customer')
+checkConsistency('../model.txt', 'attributes', 'Customer')
+//checkConsistency('../model.txt', 'types', 'Products')
