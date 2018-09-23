@@ -1,0 +1,5 @@
+select book_id, book_title from public.book
+left join public.edition on public.book.edition_id = public.edition.edition_id
+left join public.publication on public.edition.publication_id = public.publication.publication_id
+left join public.author on public.publication.author_id = public.author.author_id
+where public.author.surname = 'Sienkiewicz'

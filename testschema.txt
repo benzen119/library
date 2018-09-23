@@ -1,0 +1,30 @@
+@Types
+  pk        primary key not null
+  str       varchar(10)
+
+Author
+  author_id		      int pk
+  name          	  str
+  surname       	  str
+
+Publication
+  publication_id    int pk
+  title         	  str unique
+  author_id		      int fk[Author]
+
+Edition
+  edition_id		    int pk
+  publication_id   	int fk[Publication]
+  year             	timestamp
+  isbn             	str
+
+Book
+  book_id           int pk
+  edition_id     	  int fk[Edition]
+  book_title        str
+  inventory     	  int
+
+Books
+  book_id           int pk
+  edition_id     	  int
+  inventory     	  int

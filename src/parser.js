@@ -12,8 +12,7 @@ function objectifyModel(fileName) {
 
   var entity = parse(data);
   var collection = determineType(entity);
-  // console.log(collection)
-  // console.log(collection.tables[0].param)
+  console.log(collection)
   return collection;
 }
 
@@ -159,7 +158,7 @@ function createQuery(tables) {
   return query;
 }
 
-var model = objectifyModel('../model.txt')
+var model = objectifyModel('../testschema.txt')
 var queriesCollection = createQuery(model.tables)
 var dbEntities = []
 
@@ -380,8 +379,53 @@ function compareDataTypes(modelCollection, dbColumns, table) {
   })
 }
 
+function setReferenceTable(model) {
+  var refTable = []
+  model.tables.map(table => {
+    var reference = ''
+    var foreignKey = ''
+    table.param.map(entry => {
+      entry.fieldType.map(type => {
+        if (type.includes('REFERENCES')) {
+          reference = type.slice(11, type.length).toLowerCase()
+          foreignKey = reference + '_id'
+        }
+      })
+    })
+    refTable.push({
+      name: table.name.toLowerCase(),
+      reference: reference,
+      foreignKey: foreignKey,
+    })
+  })
+  console.log('----------------------------------------------------')
+  console.log(refTable)
+  return refTable
+}
+
+function customQuery(startTable, startField, endTable, endField, value) {
+  var currentTable = startTable
+  var refTable = setReferenceTable(model)
+  refTable.reverse()
+  var query = 'SELECT ' + startField + ' FROM public.' + startTable + ' LEFT JOIN '
+  refTable.map(entry => {
+    if (entry.reference && entry.foreignKey) {
+      currentTable = entry.name
+      query += 'public.' + entry.reference + ' ON public.' + currentTable + '.' + entry.foreignKey + ' = public.' + entry.reference + '.' + entry.foreignKey + ' LEFT JOIN '
+    }
+  })
+  query = query.slice(0, -11) + ' WHERE public.' + endTable + '.' + endField + ' = ' + "'" + value + "'"
+  console.log('----------------------------------------------------')
+  console.log(query)
+  return query
+}
+
+customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
+
+
 //objectifyModel('../model.txt')
+//objectifyModel('../testschema.txt')
 //createModel()
 //checkConsistency('../model.txt', 'entities', 'Customer')
-checkConsistency('../model.txt', 'attributes', 'Customer')
+//checkConsistency('../model.txt', 'attributes', 'Customer')
 //checkConsistency('../model.txt', 'types', 'Products')
