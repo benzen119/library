@@ -29,6 +29,9 @@ const Author = sequelize.define('author', {
     type: Sequelize.STRING,
     field: 'surname',
   },
+},
+{
+  freezeTableName: true,
 })
 
 const Publication = sequelize.define('publication', {
@@ -51,7 +54,10 @@ const Publication = sequelize.define('publication', {
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
     },
   },
-})
+},
+  {
+    freezeTableName: true,
+  })
 
 const Edition = sequelize.define('edition', {
   editionId: {
@@ -72,7 +78,10 @@ const Edition = sequelize.define('edition', {
     type: Sequelize.STRING,
     field: 'isbn',
   },
-})
+},
+  {
+    freezeTableName: true,
+  })
 
 const Book = sequelize.define('book', {
   bookId: {
@@ -97,16 +106,19 @@ const Book = sequelize.define('book', {
     type: Sequelize.INTEGER,
     field: 'inventory'
   },
-})
+},
+  {
+    freezeTableName: true,
+  })
 
 sequelize.authenticate()
   .then(() => {
     console.log('Connection has been established successfully.')
     Author.sync().then(() => {
       return Author.create({
-        authorId: 1,
-        name: 'Adam',
-        surname: 'Mickiewicz',
+        authorId: 2,
+        name: 'Henryk',
+        surname: 'Sienkiewicz',
       })
     })
   })
