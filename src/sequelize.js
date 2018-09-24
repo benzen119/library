@@ -49,13 +49,66 @@ const Publication = sequelize.define('publication', {
       model: Author,
       key: 'author_id',
       deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
-    }
+    },
+  },
+})
+
+const Edition = sequelize.define('edition', {
+  editionId: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    field: 'edition_id',
+  },
+  publicationId: {
+    type: Sequelize.INTEGER,
+    field: 'publication_id',
+    references: {
+      model: Publication,
+      key: 'publication_id',
+      deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
+    },
+  },
+  isbn: {
+    type: Sequelize.STRING,
+    field: 'isbn',
+  },
+})
+
+const Book = sequelize.define('book', {
+  bookId: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    field: 'book_id',
+  },
+  editionId: {
+    type: Sequelize.INTEGER,
+    field: 'edition_id',
+    references: {
+      model: Edition,
+      key: 'edition_id',
+      deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
+    },
+  },
+  bookTitle: {
+    type: Sequelize.STRING,
+    field: 'book_title',
+  },
+  inventory: {
+    type: Sequelize.INTEGER,
+    field: 'inventory'
   },
 })
 
 sequelize.authenticate()
   .then(() => {
     console.log('Connection has been established successfully.')
+    Author.sync().then(() => {
+      return Author.create({
+        authorId: 1,
+        name: 'Adam',
+        surname: 'Mickiewicz',
+      })
+    })
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err)
