@@ -3,7 +3,7 @@ const express = require('express')
 const pg = require('pg')
 const app = express()
 
-const sequelize = new Sequelize('library', 'postgres', '123', {
+const sequelize = new Sequelize('postgres', 'postgres', '123', {
   host: 'localhost',
   port: 8000,
   dialect: 'postgres',
@@ -15,6 +15,44 @@ const sequelize = new Sequelize('library', 'postgres', '123', {
   operatorsAliases: false
 })
 
+const Author = sequelize.define('author', {
+  authorId: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    field: 'author_id',
+  },
+  name: {
+    type: Sequelize.STRING,
+    field: 'name',
+  },
+  surname: {
+    type: Sequelize.STRING,
+    field: 'surname',
+  },
+})
+
+const Publication = sequelize.define('publication', {
+  publicationId: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    field: 'publication_id',
+  },
+  title: {
+    type: Sequelize.STRING,
+    field: 'name',
+    unique: true,
+  },
+  authorId: {
+    type: Sequelize.INTEGER,
+    field: 'author_id',
+    references: {
+      model: Author,
+      key: 'author_id',
+      deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
+    }
+  },
+})
+
 sequelize.authenticate()
   .then(() => {
     console.log('Connection has been established successfully.')
@@ -23,6 +61,6 @@ sequelize.authenticate()
     console.error('Unable to connect to the database:', err)
   })
 
-app.listen(4000, function () {
-  console.log('Server is running.. on Port 4000')
-})
+// app.listen(4000, function () {
+//   console.log('Server is running.. on Port 4000')
+// })
