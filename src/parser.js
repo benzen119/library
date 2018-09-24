@@ -409,7 +409,7 @@ function customQuery(startTable, startField, endTable, endField, value) {
   refTable.reverse()
   var query = 'SELECT ' + startField + ' FROM public.' + startTable + ' LEFT JOIN '
   refTable.map(entry => {
-    if (entry.reference && entry.foreignKey) {
+    if (entry.reference && entry.foreignKey && entry.name !== endTable) {
       currentTable = entry.name
       query += 'public.' + entry.reference + ' ON public.' + currentTable + '.' + entry.foreignKey + ' = public.' + entry.reference + '.' + entry.foreignKey + ' LEFT JOIN '
     }
@@ -420,8 +420,8 @@ function customQuery(startTable, startField, endTable, endField, value) {
   return query
 }
 
-customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
-
+//customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
+customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
 
 //objectifyModel('../model.txt')
 //objectifyModel('../testschema.txt')
