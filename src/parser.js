@@ -421,7 +421,7 @@ function customQuery(startTable, startField, endTable, endField, value) {
 }
 
 //customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
-customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
+//customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
 
 //objectifyModel('../model.txt')
 //objectifyModel('../testschema.txt')
