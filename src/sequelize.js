@@ -114,11 +114,12 @@ const Book = sequelize.define('book', {
 sequelize.authenticate()
   .then(() => {
     console.log('Connection has been established successfully.')
-    Author.sync().then(() => {
-      return Author.create({
-        authorId: 2,
-        name: 'Henryk',
-        surname: 'Sienkiewicz',
+    Book.sync().then(() => {
+      return Book.create({
+        bookId: 2,
+        editionId: 2,
+        bookTitle: 'Quo Vadis',
+        inventory: 344
       })
     })
   })

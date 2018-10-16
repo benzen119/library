@@ -154,7 +154,6 @@ function createQuery(tables) {
     queryText += ');'
     query.push(queryText)
   }
-  //console.log(query)
   return query;
 }
 
@@ -174,7 +173,10 @@ const pool = new pg.Pool({
 function createModel () {
   pool.connect().then(client => {
     console.log('Successfuly connected to DB!')
-    var queries = queriesCollection.map(queryItem => client.query(queryItem))
+    var queries = queriesCollection.map(queryItem => {
+      console.log(queryItem)
+      client.query(queryItem)
+    })
     Promise.all(queries).then(() => {
       console.log('Database model has been created!')
       pool.end()
@@ -405,13 +407,22 @@ function setReferenceTable(model) {
 
 function customQuery(startTable, startField, endTable, endField, value) {
   var currentTable = startTable
+  var isFinished = false
   var refTable = setReferenceTable(model)
   refTable.reverse()
+  var index = refTable.map(item => item.name).indexOf(startTable)
+  if (index > 0) {
+    refTable = refTable.slice(index, refTable.length + 1)
+    console.log(refTable)
+  }
   var query = 'SELECT ' + startField + ' FROM public.' + startTable + ' LEFT JOIN '
   refTable.map(entry => {
-    if (entry.reference && entry.foreignKey && entry.name !== endTable) {
+    if (entry.reference && entry.foreignKey && (entry.name !== endTable) && !isFinished) {
       currentTable = entry.name
       query += 'public.' + entry.reference + ' ON public.' + currentTable + '.' + entry.foreignKey + ' = public.' + entry.reference + '.' + entry.foreignKey + ' LEFT JOIN '
+    }
+    else {
+      isFinished = true
     }
   })
   query = query.slice(0, -11) + ' WHERE public.' + endTable + '.' + endField + ' = ' + "'" + value + "'"
@@ -422,6 +433,9 @@ function customQuery(startTable, startField, endTable, endField, value) {
 
 //customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
 //customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
+//customQuery('book', 'inventory', 'edition', 'isbn', '2323s')
+//customQuery('edition', 'isbn', 'publication', 'title', 'Poznań')
+customQuery('edition', 'isbn', 'author', 'name', 'Sienkiewicz')
 
 //objectifyModel('../model.txt')
 //objectifyModel('../testschema.txt')
