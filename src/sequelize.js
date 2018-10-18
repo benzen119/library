@@ -126,69 +126,115 @@ Publication.belongsTo(Author, {
   targetKey: 'authorId',
 })
 
-// sequelize.authenticate()
-//   .then(() => {
-//     console.log('Connection has been established successfully.')
-//     Book.findAll({
-//       attributes: ['inventory'],
-//       include: [{
-//         model: Edition,
-//         where: {
-//           isbn: '2323s'
-//         }
-//       }]
-//     }).then( result => {
-//       console.log('success')
-//       console.log(result)
-//     })
-//   })
-//   .catch(err => {
-//     console.error('Unable to connect to the database:', err)
-//   })
+function executeOneRelation() {
+  var fs = require('fs')
+  var fileText = ''
+  sequelize.authenticate()
+    .then(() => {
+      console.log('Connection has been established successfully.')
+      for (var i = 0; i < 20; i++) {
+        var start = new Date().getTime()
+        Book.findAll({
+          attributes: ['inventory'],
+          include: [{
+            model: Edition,
+            where: {
+              isbn: '2323s'
+            }
+          }]
+        }).then(result => {
+          var end = new Date().getTime()
+          var executionTime = end - start
+          fileText += (executionTime / 1000) + "\n"
+          if (i = 19) {
+            fs.writeFile('../sequalize-times-20.txt', fileText, (err) => {
+              if (err) throw err
+            })
+          }
+        })
+      }
+      console.log('finished')
+    })
+    .catch(err => {
+      console.error('Unable to connect to the database:', err)
+    })
+}
 
-// sequelize.authenticate()
-//   .then(() => {
-//     console.log('Connection has been established successfully.')
-//     Book.findAll({
-//       attributes: ['inventory'],
-//       include: [{
-//         model: Edition,
-//         include: [{
-//           model: Publication,
-//           where: {
-//             title: 'publikacja'
-//           }
-//         }]
-//       }]
-//     }).then(result => {
-//       console.log(result)
-//     })
-//   })
-//   .catch(err => {
-//     console.error('Unable to connect to the database:', err)
-//   })
+function executeTwoRelations() {
+  var fs = require('fs')
+  var fileText = ''
+  sequelize.authenticate()
+    .then(() => {
+      console.log('Connection has been established successfully.')
+      for (var i = 0; i < 20; i++) {
+        var start = new Date().getTime()
+        Book.findAll({
+          attributes: ['inventory'],
+          include: [{
+            model: Edition,
+            include: [{
+              model: Publication,
+              where: {
+                title: 'publikacja'
+              }
+            }]
+          }]
+        }).then(result => {
+          var end = new Date().getTime()
+          var executionTime = end - start
+          fileText += (executionTime / 1000) + "\n"
+          if (i = 19) {
+            fs.writeFile('../sequalize-2r-times-20.txt', fileText, (err) => {
+              if (err) throw err
+            })
+          }
+        })
+      }
+      console.log('finished')
+    })
+    .catch(err => {
+      console.error('Unable to connect to the database:', err)
+    })
+}
 
-// sequelize.authenticate()
-//   .then(() => {
-//     console.log('Connection has been established successfully.')
-//     Book.findAll({
-//       attributes: ['book_title'],
-//       include: [{
-//         model: Edition,
-//         include: [{
-//           model: Publication,
-//           include: [{
-//             model: Author,
-//             where: {
-//               surname: 'Sienkiewicz'
-//             }
-//           }]
-//         }]
-//       }]
-//     }).then(result => {
-//       console.log(result)
-//     })
-//   })
-//   .catch(err => {
-//     console.error('Unable to connect to the database:', err)
-//   })
+function executeThreeRelations() {
+  var fs = require('fs')
+  var fileText = ''
+  sequelize.authenticate()
+    .then(() => {
+      console.log('Connection has been established successfully.')
+      for (var i = 0; i < 100; i++) {
+        var start = new Date().getTime()
+        Book.findAll({
+          attributes: ['book_title'],
+          include: [{
+            model: Edition,
+            include: [{
+              model: Publication,
+              include: [{
+                model: Author,
+                where: {
+                  surname: 'Sienkiewicz'
+                }
+              }]
+            }]
+          }]
+        }).then(result => {
+          var end = new Date().getTime()
+          var executionTime = end - start
+          fileText += (executionTime / 1000) + "\n"
+          if (i = 99) {
+            fs.writeFile('../sequalize-3r-times-100.txt', fileText, (err) => {
+              if (err) throw err
+            })
+          }
+        })
+      }
+      console.log('finished')
+    })
+    .catch(err => {
+      console.error('Unable to connect to the database:', err)
+    })
+}
+
+executeThreeRelations()

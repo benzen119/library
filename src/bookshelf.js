@@ -10,6 +10,31 @@ const knex = require('knex')({
   },
 })
 
+function executeThreeRelations() {
+  var fs = require('fs')
+  var fileText = ''
+  for (var i = 0; i < 100; i++) {
+    var start = new Date().getTime()
+    knex.select('book_title').from('book')
+    .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
+    .leftJoin('publication', 'publication.publication_id', '=', 'edition.publication_id')
+    .leftJoin('author', 'author.author_id', '=', 'publication.author_id')
+    .where('surname', 'Mickiewicz')
+      .then(function (data) {
+        var end = new Date().getTime()
+        var executionTime = end - start
+        fileText += (executionTime / 1000) + "\n"
+        if (i = 99) {
+          fs.writeFile('../bookshelf-results/bookshelf-3r-times-100.txt', fileText, (err) => {
+            if (err) throw err
+          })
+        }
+      })
+  }
+}
+
+executeThreeRelations()
+
 // knex.select('inventory').from('book')
 // .leftJoin('edition', 'book.edition_id', '=' , 'edition.edition_id')
 // .where('isbn', '2323s')
@@ -25,14 +50,14 @@ const knex = require('knex')({
 //   console.log(data)
 // })
 
-knex.select('book_title').from('book')
-  .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
-  .leftJoin('publication', 'publication.publication_id', '=', 'edition.publication_id')
-  .leftJoin('author', 'author.author_id', '=', 'publication.author_id')
-  .where('surname', 'Mickiewicz')
-  .then(function (data) {
-    console.log(data)
-  })
+// knex.select('book_title').from('book')
+//   .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
+//   .leftJoin('publication', 'publication.publication_id', '=', 'edition.publication_id')
+//   .leftJoin('author', 'author.author_id', '=', 'publication.author_id')
+//   .where('surname', 'Mickiewicz')
+//   .then(function (data) {
+//     console.log(data)
+//   })
 
 const bookshelf = require('bookshelf')(knex)
 

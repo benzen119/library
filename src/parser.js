@@ -427,12 +427,44 @@ function customQuery(startTable, startField, endTable, endField, value) {
   query = query.slice(0, -11) + ' WHERE public.' + endTable + '.' + endField + ' = ' + "'" + value + "'"
   console.log('----------------------------------------------------')
   console.log(query)
+  console.log('----------------------------------------------------')
   return query
 }
+
+function measureTimes() {
+  var fs = require('fs')
+  var fileText = ''
+  pool.connect((err, client, done) => {
+    if (err) throw err
+    for (var i = 0; i < 20; i++) {
+      var start = new Date().getTime()
+      let query = customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
+      client.query(query, (err, res) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          var end = new Date().getTime()
+          var executionTime = end - start
+          //console.log('Execution time: ' + (executionTime / 1000) + ' sec')
+          fileText += (executionTime / 1000) + "\n"
+      }
+      if (i = 19) {
+        fs.writeFile('../parser-results/parser-3r-times-20.txt', fileText, (err) => {
+          if (err) throw err
+        })
+      }
+    })
+  }
+})
+}
+
+measureTimes()
 
 //customQuery('book', 'book_title', 'author', 'surname', 'Mickiewicz')
 //customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
 //customQuery('book', 'inventory', 'edition', 'isbn', '2323s')
+
 //customQuery('edition', 'isbn', 'publication', 'title', 'Poznań')
 //customQuery('edition', 'isbn', 'author', 'name', 'Sienkiewicz')
 
@@ -443,3 +475,4 @@ function customQuery(startTable, startField, endTable, endField, value) {
 //checkConsistency('../model.txt', 'entities', 'Customer')
 //checkConsistency('../model.txt', 'attributes', 'Customer')
 //checkConsistency('../model.txt', 'types', 'Products')
+
