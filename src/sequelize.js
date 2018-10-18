@@ -111,22 +111,84 @@ const Book = sequelize.define('book', {
     freezeTableName: true,
   })
 
-sequelize.authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.')
-    Book.sync().then(() => {
-      return Book.create({
-        bookId: 2,
-        editionId: 2,
-        bookTitle: 'Quo Vadis',
-        inventory: 344
-      })
-    })
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err)
-  })
+Book.belongsTo(Edition, {
+  foreignKey: 'edition_id',
+  targetKey: 'editionId',
+})
 
-// app.listen(4000, function () {
-//   console.log('Server is running.. on Port 4000')
-// })
+Edition.belongsTo(Publication, {
+  foreignKey: 'publication_id',
+  targetKey: 'publicationId',
+})
+
+Publication.belongsTo(Author, {
+  foreignKey: 'author_id',
+  targetKey: 'authorId',
+})
+
+// sequelize.authenticate()
+//   .then(() => {
+//     console.log('Connection has been established successfully.')
+//     Book.findAll({
+//       attributes: ['inventory'],
+//       include: [{
+//         model: Edition,
+//         where: {
+//           isbn: '2323s'
+//         }
+//       }]
+//     }).then( result => {
+//       console.log('success')
+//       console.log(result)
+//     })
+//   })
+//   .catch(err => {
+//     console.error('Unable to connect to the database:', err)
+//   })
+
+// sequelize.authenticate()
+//   .then(() => {
+//     console.log('Connection has been established successfully.')
+//     Book.findAll({
+//       attributes: ['inventory'],
+//       include: [{
+//         model: Edition,
+//         include: [{
+//           model: Publication,
+//           where: {
+//             title: 'publikacja'
+//           }
+//         }]
+//       }]
+//     }).then(result => {
+//       console.log(result)
+//     })
+//   })
+//   .catch(err => {
+//     console.error('Unable to connect to the database:', err)
+//   })
+
+// sequelize.authenticate()
+//   .then(() => {
+//     console.log('Connection has been established successfully.')
+//     Book.findAll({
+//       attributes: ['book_title'],
+//       include: [{
+//         model: Edition,
+//         include: [{
+//           model: Publication,
+//           include: [{
+//             model: Author,
+//             where: {
+//               surname: 'Sienkiewicz'
+//             }
+//           }]
+//         }]
+//       }]
+//     }).then(result => {
+//       console.log(result)
+//     })
+//   })
+//   .catch(err => {
+//     console.error('Unable to connect to the database:', err)
+//   })

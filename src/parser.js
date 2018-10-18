@@ -413,7 +413,6 @@ function customQuery(startTable, startField, endTable, endField, value) {
   var index = refTable.map(item => item.name).indexOf(startTable)
   if (index > 0) {
     refTable = refTable.slice(index, refTable.length + 1)
-    console.log(refTable)
   }
   var query = 'SELECT ' + startField + ' FROM public.' + startTable + ' LEFT JOIN '
   refTable.map(entry => {
@@ -435,7 +434,8 @@ function customQuery(startTable, startField, endTable, endField, value) {
 //customQuery('book', 'inventory', 'publication', 'title', 'publikacja')
 //customQuery('book', 'inventory', 'edition', 'isbn', '2323s')
 //customQuery('edition', 'isbn', 'publication', 'title', 'Poznań')
-customQuery('edition', 'isbn', 'author', 'name', 'Sienkiewicz')
+//customQuery('edition', 'isbn', 'author', 'name', 'Sienkiewicz')
+
 
 //objectifyModel('../model.txt')
 //objectifyModel('../testschema.txt')
