@@ -13,7 +13,7 @@ const knex = require('knex')({
 function executeThreeRelations() {
   var fs = require('fs')
   var fileText = ''
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 10; i++) {
     var start = new Date().getTime()
     knex.select('book_title').from('book')
     .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
@@ -33,7 +33,7 @@ function executeThreeRelations() {
   }
 }
 
-executeThreeRelations()
+//executeThreeRelations()
 
 // knex.select('inventory').from('book')
 // .leftJoin('edition', 'book.edition_id', '=' , 'edition.edition_id')
@@ -50,14 +50,17 @@ executeThreeRelations()
 //   console.log(data)
 // })
 
-// knex.select('book_title').from('book')
-//   .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
-//   .leftJoin('publication', 'publication.publication_id', '=', 'edition.publication_id')
-//   .leftJoin('author', 'author.author_id', '=', 'publication.author_id')
-//   .where('surname', 'Mickiewicz')
-//   .then(function (data) {
-//     console.log(data)
-//   })
+model.query(function (qb) {
+  knex.select('book_title').from('book')
+    .leftJoin('edition', 'book.edition_id', '=', 'edition.edition_id')
+    .leftJoin('publication', 'publication.publication_id', '=', 'edition.publication_id')
+    .leftJoin('author', 'author.author_id', '=', 'publication.author_id')
+    .where('surname', 'Mickiewicz')
+    .then(function (data) {
+      console.log(data)
+      qb.debug(true)
+    })
+})
 
 const bookshelf = require('bookshelf')(knex)
 

@@ -166,7 +166,7 @@ function executeTwoRelations() {
   sequelize.authenticate()
     .then(() => {
       console.log('Connection has been established successfully.')
-      for (var i = 0; i < 20; i++) {
+      for (var i = 0; i < 10; i++) {
         var start = new Date().getTime()
         Book.findAll({
           attributes: ['inventory'],
@@ -183,11 +183,11 @@ function executeTwoRelations() {
           var end = new Date().getTime()
           var executionTime = end - start
           fileText += (executionTime / 1000) + "\n"
-          if (i = 19) {
-            fs.writeFile('../sequalize-2r-times-20.txt', fileText, (err) => {
-              if (err) throw err
-            })
-          }
+          // if (i = 19) {
+          //   fs.writeFile('../sequalize-2r-times-20.txt', fileText, (err) => {
+          //     if (err) throw err
+          //   })
+          // }
         })
       }
       console.log('finished')
@@ -203,7 +203,7 @@ function executeThreeRelations() {
   sequelize.authenticate()
     .then(() => {
       console.log('Connection has been established successfully.')
-      for (var i = 0; i < 100; i++) {
+      for (var i = 0; i < 1; i++) {
         var start = new Date().getTime()
         Book.findAll({
           attributes: ['book_title'],
@@ -223,11 +223,11 @@ function executeThreeRelations() {
           var end = new Date().getTime()
           var executionTime = end - start
           fileText += (executionTime / 1000) + "\n"
-          if (i = 99) {
-            fs.writeFile('../sequalize-3r-times-100.txt', fileText, (err) => {
-              if (err) throw err
-            })
-          }
+          // if (i = 99) {
+          //   fs.writeFile('../sequalize-3r-times-100.txt', fileText, (err) => {
+          //     if (err) throw err
+          //   })
+          // }
         })
       }
       console.log('finished')

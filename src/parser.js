@@ -431,6 +431,8 @@ function customQuery(startTable, startField, endTable, endField, value) {
   return query
 }
 
+
+
 function measureTimes() {
   var fs = require('fs')
   var fileText = ''
